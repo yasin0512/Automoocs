@@ -167,10 +167,13 @@ ollama pull llama3    # ~4.7 GB
 ollama serve          # run in a separate terminal
 ```
 
-### 4. Place your demo video
+### 4. Demo video (optional for local Step 6)
 
+The demo video is hosted on Google Drive: [▶️ Watch here](https://drive.google.com/file/d/1OkJunh1fy5q2OOmzwKou27U7jr0peAfK/view?usp=sharing)
+
+For local deployment, place your own output video at:
 ```
-output/完整moocs影片產出.mp4    ← required for Step 6 demo mode
+output/完整moocs影片產出.mp4
 ```
 
 ### 5. Launch
@@ -190,11 +193,10 @@ python start.py
 
 ## 🎬 Demo Video
 
+▶️ **[Watch Full Demo Video on Google Drive](https://drive.google.com/file/d/1OkJunh1fy5q2OOmzwKou27U7jr0peAfK/view?usp=sharing)**
+
 The following video demonstrates the complete output of the proposed system,
 including slide generation, virtual lecturer synthesis, and audio-visual alignment.
-
-📥 **Download Demo Video:**  
-[完整moocs影片產出.mp4](output/完整moocs影片產出.mp4)
 
 > This demo includes:
 > - Automatically generated PPT slides
@@ -207,14 +209,22 @@ including slide generation, virtual lecturer synthesis, and audio-visual alignme
 
 ## 🖥 UI Versions
 
-Two interfaces ship in the same project, accessible at different URLs.
+Two interfaces ship in the same project. Both are available as an **interactive demo on GitHub Pages** — no installation required.
+
+| Version | Live Demo | Local URL | Best for |
+|---------|-----------|-----------|---------|
+| **Interactive Demo** | [🔗 Try Demo →](https://yasin0512.github.io/Automoocs/) | — | Anyone wanting to try the UI |
+| **Simple UI** | — | `http://localhost:8000` | First-time users, presentations |
+| **Pro UI** | — | `http://localhost:8000/pro` | Power users, showcasing |
+
+> **Note:** The GitHub Pages demo simulates the full pipeline with animated progress steps. For real video generation, run locally with `python start.py`.
 
 ### Simple UI (`/`) — Clean & Accessible
 
 Step-by-step card layout. Best for demos and first-time users.
 
 - **Font:** DM Sans + DM Mono · **Theme:** Light background
-- Drag-and-drop file upload, collapsible training section, toggle switches, progress overlay with log
+- Drag-and-drop file upload, toggle switches, progress overlay with log
 
 ### Pro UI (`/pro`) — Dark & Animated
 
