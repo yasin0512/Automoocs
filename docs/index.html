@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MOOCs Auto-Generator — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset & tokens ─────────────────────────────────────── */
+:root{
+  --bg:#05070e;--sf:rgba(255,255,255,.045);--sf2:rgba(255,255,255,.08);
+  --bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.22);
+  --tx:#eef2ff;--sub:rgba(190,205,255,.55);--muted:rgba(190,205,255,.32);
+  --v:#7c3aed;--vl:rgba(124,58,237,.14);--va:rgba(124,58,237,.35);
+  --c:#06b6d4;--g:#10b981;--gl:rgba(16,185,129,.12);
+  --o:#f59e0b;--ol:rgba(245,158,11,.12);--r:#ef4444;
+  --gv:linear-gradient(135deg,#7c3aed,#06b6d4);
+  --gg:linear-gradient(135deg,#10b981,#06b6d4);
+  --rad:14px;--radl:20px;--tr:.22s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 55% at 15% 15%,rgba(124,58,237,.09) 0%,transparent 60%),
+             radial-gradient(ellipse 55% 45% at 85% 80%,rgba(6,182,212,.08) 0%,transparent 55%)}
+canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── Header ────────────────────────────────────────────── */
+header{position:sticky;top:0;z-index:200;background:rgba(5,7,14,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);padding:.8rem 2rem}
+.hdr{max-width:1100px;margin:auto;display:flex;align-items:center;gap:1rem}
+.brand{display:flex;align-items:center;gap:.85rem;flex:1}
+.orb{width:38px;height:38px;background:var(--vl);border:1.5px solid var(--va);border-radius:10px;display:flex;align-items:center;justify-content:center;animation:orbB 4s ease infinite;flex-shrink:0}
+.orb svg{width:20px;height:20px}
+@keyframes orbB{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.45)}50%{box-shadow:0 0 0 8px rgba(124,58,237,0)}}
+.bn{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;letter-spacing:-.02em}
+.neon{background:var(--gv);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.bs{font-size:.7rem;color:var(--sub)}
+.demo-badge{font-size:.75rem;font-weight:700;padding:.25rem .75rem;border-radius:100px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);color:var(--o)}
+.gh-link{color:var(--sub);text-decoration:none;font-size:.82rem;font-weight:500;padding:.28rem .72rem;border-radius:7px;border:1px solid var(--bd);transition:var(--tr)}
+.gh-link:hover{color:var(--tx);background:var(--sf2)}
+
+/* ── Hero ───────────────────────────────────────────────── */
+.hero{position:relative;z-index:1;padding:4.5rem 2rem 3rem;text-align:center;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(124,58,237,.10) 0%,transparent 65%)}
+.hero-c{max-width:800px;margin:auto}
+.ht{font-family:'Syne',sans-serif;font-size:clamp(2rem,4.5vw,3.5rem);font-weight:900;line-height:1.1;letter-spacing:-.03em;display:flex;flex-direction:column;gap:.1em;margin-bottom:1rem}
+.h2{background:var(--gv);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hs{font-size:.95rem;color:var(--sub);margin-bottom:2rem}
+.notice{display:inline-flex;align-items:center;gap:.5rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.5rem 1rem;font-size:.82rem;color:var(--o);margin-bottom:2rem}
+
+/* ── Input + Output layout ──────────────────────────────── */
+.main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 1.5rem 6rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}
+@media(max-width:800px){.main{grid-template-columns:1fr}}
+
+/* ── Cards ──────────────────────────────────────────────── */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--radl);overflow:hidden;backdrop-filter:blur(12px);transition:border-color var(--tr);opacity:0;transform:translateY(14px)}
+.card.vis{opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease,border-color var(--tr)}
+.card:hover{border-color:var(--bd2)}
+.ch{display:flex;align-items:center;gap:.7rem;padding:.9rem 1.3rem;border-bottom:1px solid var(--bd);font-weight:700;font-size:.92rem;background:rgba(255,255,255,.022)}
+.cb{padding:1.3rem;display:flex;flex-direction:column;gap:.85rem}
+
+/* ── Upload zones ───────────────────────────────────────── */
+.uz{border:2px dashed var(--bd);border-radius:var(--rad);padding:1.6rem;text-align:center;cursor:pointer;transition:var(--tr);background:rgba(255,255,255,.02);position:relative}
+.uz:hover,.uz.over{border-color:var(--v);background:var(--vl)}
+.uz.filled{border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.05)}
+.uz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ui{font-size:1.8rem;display:block;margin-bottom:.35rem;transition:transform var(--tr)}
+.uz:hover .ui{transform:scale(1.12) translateY(-2px)}
+.ut{font-size:.88rem;font-weight:700}
+.us{font-size:.74rem;color:var(--sub);margin-top:.18rem}
+.fi-bar{background:var(--gl);border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:.45rem .85rem;font-size:.8rem;color:var(--g);font-weight:600;display:flex;align-items:center;gap:.4rem;animation:fadeUp .3s ease}
+.fi-bar::before{content:'✓'}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ── Input blocks ───────────────────────────────────────── */
+.ib{display:flex;flex-direction:column;gap:.45rem;padding:.9rem 0;border-bottom:1px solid var(--bd)}
+.ib:last-child{border-bottom:none;padding-bottom:0}
+.ibl{font-size:.86rem;font-weight:700}
+.ibd{font-size:.78rem;color:var(--sub);line-height:1.5}
+.badges{display:flex;gap:.35rem;flex-wrap:wrap}
+.bq{font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:100px}
+.bq.req{background:rgba(59,130,246,.18);color:#93c5fd}
+.bq.opt{background:rgba(107,114,128,.18);color:#9ca3af}
+.bq.ai{background:var(--vl);color:#c4b5fd}
+
+/* ── Template toggle ────────────────────────────────────── */
+.tg-row{display:flex;gap:.4rem}
+.tg-pill{font-size:.78rem;font-weight:600;padding:.28rem .7rem;border-radius:100px;border:1.5px solid var(--bd);cursor:pointer;transition:var(--tr);color:var(--sub);background:rgba(255,255,255,.03)}
+.tg-pill.act{border-color:var(--v);background:var(--vl);color:#c4b5fd}
+.theme-row{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.35rem}
+.ts{width:30px;height:30px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:var(--tr);opacity:.55;flex-shrink:0}
+.ts.act{border-color:#fff;opacity:1;transform:scale(1.12)}
+textarea{background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:9px;color:var(--tx);font-family:'DM Mono',monospace;font-size:.79rem;line-height:1.7;padding:.75rem .9rem;width:100%;resize:vertical;transition:border-color var(--tr)}
+textarea:focus{outline:none;border-color:var(--v);box-shadow:0 0 0 3px var(--vl)}
+textarea::placeholder{color:var(--muted)}
+
+/* ── Thumbnail grid ─────────────────────────────────────── */
+.tg{display:flex;flex-wrap:wrap;gap:.45rem;min-height:0}
+.tw{position:relative;width:68px;height:68px;animation:fadeUp .3s ease}
+.tw img{width:68px;height:68px;object-fit:cover;border-radius:8px;border:1.5px solid var(--bd)}
+.tw button{position:absolute;top:-5px;right:-5px;width:18px;height:18px;background:var(--r);color:#fff;border:none;border-radius:50%;font-size:.62rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;opacity:0;transition:opacity var(--tr)}
+.tw:hover button{opacity:1}
+
+/* ── Checklist ──────────────────────────────────────────── */
+.checks{display:flex;flex-direction:column;gap:.3rem;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:10px;padding:.8rem 1rem}
+.ci{display:flex;align-items:center;gap:.45rem;font-size:.82rem;color:var(--sub);transition:color var(--tr)}
+.ck{font-size:.85rem;color:var(--muted);transition:color var(--tr)}
+.ci.done{color:var(--tx)}.ci.done .ck{color:var(--g)}
+.ci em{font-style:normal;font-size:.72rem;opacity:.6;margin-left:.2rem}
+
+/* ── Generate button ────────────────────────────────────── */
+.btn-gen{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.95rem;border-radius:13px;font-family:'Space Grotesk',sans-serif;font-size:1.02rem;font-weight:700;border:none;cursor:pointer;background:var(--gv);color:#fff;box-shadow:0 4px 30px rgba(124,58,237,.35);transition:transform var(--tr),box-shadow var(--tr);background-size:200% 200%;animation:gradSh 4s ease infinite;overflow:hidden}
+.btn-gen:disabled{opacity:.35;cursor:not-allowed;animation:none}
+.btn-gen:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(124,58,237,.5)}
+@keyframes gradSh{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.btn-gen .glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,rgba(255,255,255,.25),transparent 65%);opacity:0;transition:opacity var(--tr)}
+.btn-gen:not(:disabled):hover .glow{opacity:1}
+.gen-note{font-size:.78rem;color:var(--sub);text-align:center}
+
+/* ── Progress ───────────────────────────────────────────── */
+.prog-panel{display:none}
+.flow-mini{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-bottom:.7rem}
+.fm{padding:.22rem .6rem;border-radius:100px;font-size:.71rem;font-weight:600;background:rgba(255,255,255,.06);color:var(--sub);border:1px solid var(--bd);transition:var(--tr);white-space:nowrap}
+.fm.run{background:var(--ol);border-color:var(--o);color:var(--o);animation:blink 1s infinite}
+.fm.ok{background:var(--gl);border-color:var(--g);color:var(--g)}
+.fa{color:var(--muted);font-size:.75rem}
+@keyframes blink{50%{opacity:.55}}
+.pb-w{display:flex;align-items:center;gap:.65rem}
+.pb-t{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:100px;overflow:hidden}
+.pb-f{height:100%;background:var(--gv);border-radius:100px;transition:width .4s ease;width:0;position:relative;overflow:hidden}
+.pb-f::after{content:'';position:absolute;top:0;left:-80%;width:80%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shine 1.5s linear infinite}
+@keyframes shine{to{left:160%}}
+.pb-pct{font-family:'DM Mono',monospace;font-weight:700;color:var(--v);font-size:.88rem;min-width:3rem}
+.pb-msg{font-size:.82rem;color:var(--sub);margin-top:.3rem;min-height:1.3em}
+.log{max-height:110px;overflow-y:auto;background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:8px;padding:.65rem .85rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--sub);margin-top:.4rem}
+.ll.ok{color:var(--g)}.ll.run{color:var(--o)}
+
+/* ── Output ─────────────────────────────────────────────── */
+.output-panel{display:none}
+.banner{display:flex;align-items:center;gap:.9rem;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(6,182,212,.07));border:1px solid rgba(16,185,129,.25);border-radius:11px;padding:.9rem 1.15rem}
+.banner-e{font-size:1.8rem}
+.bt{font-weight:700;color:var(--g);font-size:.95rem}
+.bs2{font-size:.78rem;color:var(--sub);margin-top:.1rem}
+video{width:100%;border-radius:10px;background:#000;max-height:360px;border:1px solid var(--bd)}
+.dl-btn{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:9px;padding:.6rem .95rem;font-size:.84rem;font-weight:600}
+.dl-a{background:var(--gg);color:#fff;padding:.3rem .85rem;border-radius:7px;text-decoration:none;font-size:.79rem;font-weight:700;transition:var(--tr)}
+.dl-a:hover{filter:brightness(1.12)}
+
+/* ── Toasts ─────────────────────────────────────────────── */
+#toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.4rem}
+.toast{background:rgba(12,14,26,.97);border:1px solid var(--bd);border-radius:10px;padding:.7rem 1rem;font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:.4rem;animation:tIn .25s ease;max-width:300px;backdrop-filter:blur(16px)}
+.toast-ok{border-left:3px solid var(--g)}.toast-err{border-left:3px solid var(--r)}.toast-info{border-left:3px solid var(--v)}
+@keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<header>
+  <div class="hdr">
+    <div class="brand">
+      <div class="orb">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="16" stroke="url(#g0)" stroke-width="2"/>
+          <path d="M12 18l5 5 8-9" stroke="url(#g0)" stroke-width="2.5" stroke-linecap="round"/>
+          <defs><linearGradient id="g0" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+        </svg>
+      </div>
+      <div><div class="bn">MOOCs<span class="neon">Pro</span></div><div class="bs">Tamkang University · Ya-Xin Guo</div></div>
+    </div>
+    <span class="demo-badge">🎯 Interactive Demo</span>
+    <a href="https://github.com/your-username/moocs-auto-generator" class="gh-link" target="_blank">GitHub →</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-c">
+    <div class="ht">
+      <span>One Upload.</span>
+      <span class="h2">One Click.</span>
+      <span>Complete MOOCs Video.</span>
+    </div>
+    <p class="hs">Upload your lecture audio + teacher video → system automatically generates slides, script, and a lip-synced virtual lecturer video</p>
+    <div class="notice">
+      ⚡ This is an interactive UI demo — video generation simulated. Run locally for real output.
+    </div>
+  </div>
+</section>
+
+<div class="main">
+
+<!-- LEFT: Inputs -->
+<div>
+
+  <!-- Required inputs -->
+  <div class="card" id="c1">
+    <div class="ch">📥 Required Inputs</div>
+    <div class="cb">
+
+      <div class="ib">
+        <div class="ibl">① Lecture Audio <span class="bq req">Required</span></div>
+        <div class="ibd">The classroom recording to convert into a MOOCs video</div>
+        <div class="uz" id="audioDz" onclick="document.getElementById('audioIn').click()" ondragover="event.preventDefault();this.classList.add('over')" ondrop="dropHandler(event,'audio')" ondragexit="this.classList.remove('over')">
+          <input type="file" id="audioIn" accept=".wav,.mp3,.m4a,.flac" style="opacity:0;position:absolute;inset:0;cursor:pointer" onchange="handleFile(this,'audio')"/>
+          <span class="ui">🎵</span>
+          <div class="ut" id="audio-t">Drop lecture audio here</div>
+          <div class="us">WAV · MP3 · M4A · FLAC (max 500 MB)</div>
+        </div>
+        <div class="fi-bar" id="audio-fi" style="display:none"></div>
+      </div>
+
+      <div class="ib">
+        <div class="ibl">② Teacher Video <span class="bq req">Required</span></div>
+        <div class="ibd">Automatically used for: action model training + lip-sync face extraction</div>
+        <div class="badges" style="margin-bottom:.2rem">
+          <span class="bq" style="background:rgba(59,130,246,.12);color:#93c5fd">💡 Teacher visible on camera</span>
+          <span class="bq" style="background:var(--gl);color:#6ee7b7">✨ Green-screen = best results</span>
+        </div>
+        <div class="uz" id="teacherDz" onclick="document.getElementById('teacherIn').click()" ondragover="event.preventDefault();this.classList.add('over')" ondrop="dropHandler(event,'teacher')" ondragexit="this.classList.remove('over')">
+          <input type="file" id="teacherIn" accept=".mp4,.avi,.mov,.mkv" style="opacity:0;position:absolute;inset:0;cursor:pointer" onchange="handleFile(this,'teacher')"/>
+          <span class="ui">🎥</span>
+          <div class="ut" id="teacher-t">Drop teacher video here</div>
+          <div class="us">MP4 · AVI · MOV — teacher must be visible on screen</div>
+        </div>
+        <div class="fi-bar" id="teacher-fi" style="display:none"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Optional inputs -->
+  <div class="card" id="c2" style="margin-top:1.2rem">
+    <div class="ch">📎 Optional Inputs</div>
+    <div class="cb">
+
+      <div class="ib">
+        <div class="ibl">③ Course Syllabus <span class="bq opt">Optional</span></div>
+        <div class="ibd">Enables knowledge point extraction and slide structuring</div>
+        <textarea id="syllabus" rows="6" placeholder="Chapter Title&#10;Chapter 1: Data Structures&#10;&#10;Learning Objectives&#10;1. Understand arrays and linked lists&#10;&#10;Key Points&#10;Sorting algorithms&#10;Time complexity: O(n), O(log n)"></textarea>
+        <button onclick="loadEx()" style="font-size:.76rem;background:transparent;border:1px solid var(--bd);color:var(--sub);padding:.25rem .65rem;border-radius:7px;cursor:pointer;font-family:inherit;transition:var(--tr)" onmouseover="this.style.color='var(--tx)'" onmouseout="this.style.color='var(--sub)'">Load Example</button>
+      </div>
+
+      <div class="ib">
+        <div class="ibl">④ Image Materials <span class="bq opt">Optional</span> <span class="bq ai">CLIP auto-match</span></div>
+        <div class="ibd">CLIP assigns each image to its best-matching slide</div>
+        <div class="uz" id="imgDz" onclick="document.getElementById('imgIn').click()" ondragover="event.preventDefault();this.classList.add('over')" ondrop="dropHandler(event,'img')" ondragexit="this.classList.remove('over')">
+          <input type="file" id="imgIn" accept=".jpg,.jpeg,.png,.webp" multiple style="opacity:0;position:absolute;inset:0;cursor:pointer" onchange="handleImgs(this)"/>
+          <span class="ui">🖼</span>
+          <div class="ut" id="img-t">Drop images here</div>
+          <div class="us">JPG · PNG · WEBP · multiple files</div>
+        </div>
+        <div class="tg" id="imgGrid"></div>
+      </div>
+
+      <div class="ib">
+        <div class="ibl">⑤ Slide Template <span class="bq opt">Optional</span></div>
+        <div class="tg-row" style="margin-bottom:.5rem">
+          <button class="tg-pill act" id="pill-builtin" onclick="setTplMode('builtin')">🎨 Built-in Theme</button>
+          <button class="tg-pill" id="pill-upload" onclick="setTplMode('upload')">📄 Upload .pptx</button>
+        </div>
+        <!-- Built-in themes -->
+        <div id="themeSection">
+          <div class="theme-row">
+            <div class="ts act" data-t="Modern Blue"   style="background:#3b82f6" onclick="selT(this)" title="Modern Blue"></div>
+            <div class="ts"    data-t="Academic Green" style="background:#22c55e" onclick="selT(this)" title="Academic Green"></div>
+            <div class="ts"    data-t="Elegant Purple" style="background:#a855f7" onclick="selT(this)" title="Elegant Purple"></div>
+            <div class="ts"    data-t="Tech Gray"       style="background:#06b6d4" onclick="selT(this)" title="Tech Gray"></div>
+            <div class="ts"    data-t="Warm Orange"     style="background:#f97316" onclick="selT(this)" title="Warm Orange"></div>
+          </div>
+          <div style="font-size:.74rem;color:var(--sub);margin-top:.3rem" id="themeLabel">Selected: Modern Blue</div>
+        </div>
+        <!-- Upload template -->
+        <div id="uploadSection" style="display:none">
+          <div class="uz" style="padding:1.1rem" onclick="document.getElementById('tplIn').click()" ondragover="event.preventDefault();this.classList.add('over')" ondrop="dropHandler(event,'template')" ondragexit="this.classList.remove('over')">
+            <input type="file" id="tplIn" accept=".pptx" style="opacity:0;position:absolute;inset:0;cursor:pointer" onchange="handleFile(this,'template')"/>
+            <span class="ui" style="font-size:1.4rem">📄</span>
+            <div class="ut" id="tpl-t">Drop your .pptx template</div>
+          </div>
+          <div class="fi-bar" id="tpl-fi" style="display:none"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /left -->
+
+<!-- RIGHT: Generate + Progress + Output -->
+<div>
+
+  <!-- Checklist + Generate -->
+  <div class="card" id="c3">
+    <div class="ch">🚀 Generate</div>
+    <div class="cb">
+      <div style="font-size:.82rem;color:var(--sub);padding:.6rem .9rem;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:9px;border-left:3px solid var(--v);line-height:1.6">
+        All steps run automatically: audio processing → text cleaning → syllabus alignment → slide generation → script writing → voice synthesis → video composition
+      </div>
+
+      <div class="checks" id="checklist">
+        <div class="ci" id="ci-a"><span class="ck">○</span> Lecture audio</div>
+        <div class="ci" id="ci-t"><span class="ck">○</span> Teacher video</div>
+        <div class="ci" id="ci-s"><span class="ck">○</span> Syllabus <em>(optional)</em></div>
+        <div class="ci" id="ci-i"><span class="ck">○</span> Images <em>(optional)</em></div>
+        <div class="ci" id="ci-p"><span class="ck">○</span> Template <em>(optional)</em></div>
+      </div>
+
+      <button class="btn-gen" id="btnGen" onclick="simulate()" disabled>
+        <span>🎬 Generate MOOCs Video</span>
+        <div class="glow"></div>
+      </button>
+      <div class="gen-note" id="genNote">Upload lecture audio + teacher video to enable</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="card prog-panel" id="progCard" style="margin-top:1.2rem">
+    <div class="ch">⏳ Processing…</div>
+    <div class="cb">
+      <div class="flow-mini">
+        <div class="fm" id="fm-a">🎙 Audio</div><div class="fa">›</div>
+        <div class="fm" id="fm-c">✏ Clean</div><div class="fa">›</div>
+        <div class="fm" id="fm-al">📋 Align</div><div class="fa">›</div>
+        <div class="fm" id="fm-p">🖼 Slides</div><div class="fa">›</div>
+        <div class="fm" id="fm-s">📝 Script</div><div class="fa">›</div>
+        <div class="fm" id="fm-v">🎬 Video</div>
+      </div>
+      <div class="pb-w"><div class="pb-t"><div class="pb-f" id="pbf"></div></div><span class="pb-pct" id="pbn">0%</span></div>
+      <div class="pb-msg" id="pbm"></div>
+      <div class="log" id="plog"></div>
+    </div>
+  </div>
+
+  <!-- Output -->
+  <div class="card output-panel" id="outCard" style="margin-top:1.2rem">
+    <div class="ch">🎉 Your MOOCs Video is Ready!</div>
+    <div class="cb">
+      <div class="banner">
+        <span class="banner-e">🎓</span>
+        <div><div class="bt">Teaching Video Generated</div><div class="bs2">Slides · Script · Virtual Lecturer · Lip Sync</div></div>
+      </div>
+      <video id="demoVid" controls>
+        <source src="" type="video/mp4"/>
+        Your browser does not support video playback.
+      </video>
+      <div class="dl-btn">
+        <span>🎬 Complete MOOCs Video</span>
+        <a href="#" class="dl-a" id="dlLink" download>⬇ Download</a>
+      </div>
+      <div style="font-size:.78rem;color:var(--sub);text-align:center;margin-top:.3rem">
+        ℹ️ Demo mode — run locally with <code style="font-family:'DM Mono';background:rgba(255,255,255,.08);padding:.1rem .35rem;border-radius:4px">python start.py</code> for real video output
+      </div>
+    </div>
+  </div>
+
+</div><!-- /right -->
+</div><!-- /main -->
+
+<div id="toasts"></div>
+
+<script>
+// ── Particle canvas ──────────────────────────────────────────
+(function(){
+  const cv = document.getElementById('bg'), ctx = cv.getContext('2d');
+  let W, H, pts = [];
+  function resize(){ W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+  class P { constructor(){ this.reset(); } reset(){ this.x=Math.random()*W; this.y=Math.random()*H; this.vx=(Math.random()-.5)*.4; this.vy=(Math.random()-.5)*.4; this.r=Math.random()*1.4+.5; this.a=Math.random()*.35+.07; this.c=Math.random()>.5?'124,58,237':'6,182,212'; } tick(){ this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset(); } draw(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=`rgba(${this.c},${this.a})`; ctx.fill(); } }
+  function frame(){ ctx.clearRect(0,0,W,H); for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<130){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(124,58,237,${.07*(1-d/130)})`;ctx.lineWidth=.5;ctx.stroke();}} pts.forEach(p=>{p.tick();p.draw();}); requestAnimationFrame(frame); }
+  window.addEventListener('resize',resize,{passive:true}); resize(); pts=Array.from({length:70},()=>new P()); frame();
+})();
+
+// ── Card reveal ───────────────────────────────────────────────
+const obs = new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}}),{threshold:.06});
+document.querySelectorAll('.card').forEach((c,i)=>{c.style.transitionDelay=`${i*.05}s`;obs.observe(c);});
+
+// ── State ─────────────────────────────────────────────────────
+const S = { audio: null, teacher: null, imgs: [], template: null };
+
+// ── File handlers ─────────────────────────────────────────────
+function handleFile(inp, type) {
+  const f = inp.files?.[0]; if (!f) return;
+  if (type === 'audio') {
+    S.audio = f;
+    document.getElementById('audio-t').textContent = f.name;
+    document.getElementById('audioDz').classList.add('filled');
+    const fi = document.getElementById('audio-fi'); fi.style.display=''; fi.textContent = `${f.name} · ${(f.size/1e6).toFixed(1)} MB`;
+    toast(`Audio: ${f.name}`, 'info');
+  } else if (type === 'teacher') {
+    S.teacher = f;
+    document.getElementById('teacher-t').textContent = f.name;
+    document.getElementById('teacherDz').classList.add('filled');
+    const fi = document.getElementById('teacher-fi'); fi.style.display=''; fi.textContent = `${f.name} · ${(f.size/1e9).toFixed(2)} GB`;
+    toast(`Teacher video: ${f.name}`, 'info');
+  } else if (type === 'template') {
+    if (!f.name.endsWith('.pptx')) { toast('Only .pptx files accepted', 'err'); return; }
+    S.template = f;
+    document.getElementById('tpl-t').textContent = f.name;
+    document.getElementById('templateDz')?.classList.add('filled');
+    const fi = document.getElementById('tpl-fi'); if(fi){fi.style.display=''; fi.textContent = `${f.name} · ${(f.size/1e3).toFixed(0)} KB`;}
+    toast(`Template: ${f.name}`, 'info');
+  }
+  updateChecklist();
+}
+function handleImgs(inp) {
+  [...(inp.files||[])].forEach(f => {
+    if (!['.jpg','.jpeg','.png','.webp'].includes(f.name.slice(f.name.lastIndexOf('.')).toLowerCase())) return;
+    S.imgs.push(f); renderThumbs();
+  });
+  updateChecklist();
+}
+function dropHandler(e, type) {
+  e.preventDefault(); e.target.closest('.uz')?.classList.remove('over');
+  const files = [...(e.dataTransfer.files||[])];
+  if (type === 'img') { files.forEach(f=>{ S.imgs.push(f); }); renderThumbs(); updateChecklist(); }
+  else if (files[0]) { const inp = type==='audio'?document.getElementById('audioIn'):type==='teacher'?document.getElementById('teacherIn'):type==='template'?document.getElementById('tplIn'):null; if(inp){const dt=new DataTransfer(); dt.items.add(files[0]); inp.files=dt.files; handleFile(inp,type);} }
+}
+function renderThumbs() {
+  const g = document.getElementById('imgGrid'); g.innerHTML = '';
+  S.imgs.forEach((f,i) => {
+    const url = URL.createObjectURL(f), w = document.createElement('div'); w.className='tw';
+    w.innerHTML = `<img src="${url}" title="${f.name}"/><button onclick="S.imgs.splice(${i},1);renderThumbs();updateChecklist()">✕</button>`;
+    g.appendChild(w);
+  });
+  const t = document.getElementById('img-t');
+  if(t) t.textContent = S.imgs.length ? `${S.imgs.length} image(s) ready` : 'Drop images here';
+  document.getElementById('imgDz').classList.toggle('filled', S.imgs.length > 0);
+}
+
+// ── Checklist ─────────────────────────────────────────────────
+function updateChecklist() {
+  const set = (id, done) => {
+    const el = document.getElementById(id); if(!el) return;
+    const ck = el.querySelector('.ck'); if(ck) ck.textContent = done ? '✓' : '○';
+    el.classList.toggle('done', done);
+  };
+  set('ci-a', !!S.audio); set('ci-t', !!S.teacher);
+  set('ci-s', document.getElementById('syllabus')?.value?.length > 10);
+  set('ci-i', S.imgs.length > 0); set('ci-p', !!S.template);
+  const ready = S.audio && S.teacher;
+  const btn = document.getElementById('btnGen'); if(btn) btn.disabled = !ready;
+  const note = document.getElementById('genNote');
+  if(note) note.style.display = ready ? 'none' : '';
+}
+document.getElementById('syllabus')?.addEventListener('input', updateChecklist);
+
+// ── Theme / Template ──────────────────────────────────────────
+function selT(el) {
+  document.querySelectorAll('.ts').forEach(s=>s.classList.remove('act'));
+  el.classList.add('act');
+  const lbl = document.getElementById('themeLabel');
+  if(lbl) lbl.textContent = `Selected: ${el.dataset.t}`;
+}
+function setTplMode(mode) {
+  document.getElementById('pill-builtin').classList.toggle('act', mode==='builtin');
+  document.getElementById('pill-upload').classList.toggle('act', mode==='upload');
+  document.getElementById('themeSection').style.display = mode==='builtin'?'':'none';
+  document.getElementById('uploadSection').style.display = mode==='upload'?'':'none';
+}
+function loadEx() {
+  document.getElementById('syllabus').value = `Chapter Title\nChapter 1: Data Structures\n\nLearning Objectives\n1. Understand arrays and linked lists\n2. Master sorting algorithms\n\nKey Points\nArray and Linked List\nSorting: Bubble Sort, Quick Sort\nComplexity: O(n), O(log n)`;
+  updateChecklist(); toast('Example syllabus loaded', 'info');
+}
+
+// ── Simulated pipeline ────────────────────────────────────────
+const STEPS = [
+  {id:'fm-a', pct:5,  msg:'[Audio] Loading audio file…'},
+  {id:'fm-a', pct:15, msg:'[Audio] noisereduce: background noise suppression…'},
+  {id:'fm-a', pct:25, msg:'[Audio] Silero-VAD: removing silence segments…'},
+  {id:'fm-a', pct:35, msg:'[Audio] Whisper: speech-to-text transcription…'},
+  {id:'fm-c', pct:42, msg:'[Clean] Ollama LLaMA3: removing filler words…'},
+  {id:'fm-c', pct:50, msg:'[Clean] Fixing punctuation and sentence breaks…'},
+  {id:'fm-al',pct:58, msg:'[Align] Sentence-BERT: encoding transcript…'},
+  {id:'fm-al',pct:64, msg:'[Align] Knowledge point semantic alignment…'},
+  {id:'fm-p', pct:70, msg:'[Slides] CLIP: matching images to slides…'},
+  {id:'fm-p', pct:76, msg:'[Slides] python-pptx: assembling presentation…'},
+  {id:'fm-s', pct:82, msg:'[Script] LLM: generating lecture opening…'},
+  {id:'fm-s', pct:87, msg:'[Script] Generating teaching body scripts…'},
+  {id:'fm-v', pct:91, msg:'[Video] F5-TTS: voice synthesis…'},
+  {id:'fm-v', pct:95, msg:'[Video] wav2lip: lip synchronization…'},
+  {id:'fm-v', pct:98, msg:'[Video] FFmpeg: compositing final video…'},
+  {id:'fm-v', pct:100,msg:'🎬 MOOCs video generation complete!'},
+];
+
+async function simulate() {
+  document.getElementById('progCard').style.display='';
+  document.getElementById('outCard').style.display='none';
+  document.getElementById('btnGen').disabled = true;
+  // reset flow steps
+  ['fm-a','fm-c','fm-al','fm-p','fm-s','fm-v'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='fm';});
+  const log = document.getElementById('plog'); log.innerHTML = '';
+
+  for (const step of STEPS) {
+    // update progress
+    document.getElementById('pbf').style.width = `${step.pct}%`;
+    document.getElementById('pbn').textContent = `${step.pct}%`;
+    document.getElementById('pbm').textContent = step.msg;
+    // update flow mini
+    document.querySelectorAll('.fm').forEach(el=>{ if(el.classList.contains('run')) el.className='fm ok'; });
+    const fm = document.getElementById(step.id);
+    if(fm) { fm.className = ''; fm.classList.add('fm','run'); }
+    // log
+    const ll = document.createElement('div'); ll.className='ll run';
+    ll.textContent = `[${step.pct}%] ${step.msg}`; log.appendChild(ll); log.scrollTop=log.scrollHeight;
+    if(step.pct===100) ll.className='ll ok';
+    await new Promise(r => setTimeout(r, 680));
+  }
+
+  // Mark all done
+  document.querySelectorAll('.fm.run').forEach(el=>{ el.className='fm ok'; });
+
+  // Show output
+  document.getElementById('outCard').style.display = '';
+  document.getElementById('btnGen').disabled = false;
+
+  // Point to demo video if available, else show placeholder message
+  const vid = document.getElementById('demoVid');
+  // In a real GitHub Pages deploy, you can add a sample video here:
+  // vid.querySelector('source').src = 'sample_output.mp4'; vid.load();
+
+  document.getElementById('outCard').scrollIntoView({behavior:'smooth',block:'center'});
+  toast('🎉 Video generation complete!', 'ok');
+}
+
+// ── Toast ──────────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const tc = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<span>${{ok:'✅',err:'❌',info:'ℹ️'}[type]||'•'}</span><span>${msg}</span>`;
+  tc.appendChild(el); setTimeout(()=>el.remove(), 4500);
+}
+</script>
+</body>
+</html>

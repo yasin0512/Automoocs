@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MOOCs Generator Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/pro.css"/>
+</head>
+<body>
+
+<canvas id="bg" class="bg-canvas"></canvas>
+
+<!-- Header -->
+<header class="hdr">
+  <div class="hi">
+    <div class="brand">
+      <div class="orb" id="orb">
+        <svg viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="16" stroke="url(#g0)" stroke-width="2"/>
+          <path d="M12 18l5 5 8-9" stroke="url(#g0)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs><linearGradient id="g0" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+        </svg>
+      </div>
+      <div><div class="brand-n">MOOCs<span class="neon">Pro</span></div><div class="brand-s">Automatic Educational Video Generation</div></div>
+    </div>
+    <nav class="hnav">
+      <div id="sysBadge" class="sys-badge"><span id="sysLed" class="led"></span><span id="sysTxt">Checking…</span></div>
+      <div id="realBadge" class="real-badge" style="display:none">⚡ Real Mode Ready</div>
+      <a href="/" class="nav-a">Simple UI</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-c">
+    <div class="hero-title">
+      <span class="hl1">One Upload.</span>
+      <span class="hl2">One Click.</span>
+      <span class="hl3">Complete MOOCs Video.</span>
+    </div>
+    <p class="hero-sub" id="heroSub">Audio + Teacher Video + Syllabus → Auto-generated Educational Video</p>
+    <!-- Pipeline flow indicator -->
+    <div class="flow" id="heroFlow">
+      <div class="fn active" id="fn-audio"><div class="fi">🎙</div><div class="fl">Audio</div></div>
+      <div class="fline" id="fl-01"></div>
+      <div class="fn" id="fn-video"><div class="fi">🎥</div><div class="fl">Video</div></div>
+      <div class="fline" id="fl-12"></div>
+      <div class="fn" id="fn-syllabus"><div class="fi">📋</div><div class="fl">Syllabus</div></div>
+      <div class="fline" id="fl-23"></div>
+      <div class="fn" id="fn-slides"><div class="fi">🖼</div><div class="fl">Slides</div></div>
+      <div class="fline" id="fl-34"></div>
+      <div class="fn" id="fn-script"><div class="fi">📝</div><div class="fl">Script</div></div>
+      <div class="fline" id="fl-45"></div>
+      <div class="fn" id="fn-output"><div class="fi">🎬</div><div class="fl">Output</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Workspace -->
+<div class="ws">
+
+<!-- SIDEBAR: Settings -->
+<aside class="sb">
+  <div class="sb-s">
+    <div class="sb-l">Course Title</div>
+    <input id="courseTitle" class="sb-in" type="text" value="Lecture" placeholder="Course name…"/>
+  </div>
+  <div class="sb-s">
+    <div class="sb-l">LLM Backend</div>
+    <div class="sb-tg-g">
+      <label class="sb-tg"><input type="radio" name="llm" value="ollama" checked/><span class="sb-tg-l">🦙 Ollama <em>Local</em></span></label>
+      <label class="sb-tg"><input type="radio" name="llm" value="openai"/><span class="sb-tg-l">🤖 OpenAI <em>Cloud</em></span></label>
+    </div>
+    <input id="openaiKey" class="sb-in mt6" type="password" placeholder="OpenAI API Key…" style="display:none"/>
+  </div>
+  <div class="sb-s">
+    <div class="sb-l">Align Threshold · <span id="thr">0.6</span></div>
+    <input type="range" class="sb-range" id="threshold" min="0.3" max="0.9" step="0.05" value="0.6" oninput="thr.textContent=this.value"/>
+  </div>
+  <div class="sb-s">
+    <div class="sb-l">Video Mode</div>
+    <div class="sb-tg-g">
+      <label class="sb-tg"><input type="radio" name="vidMode" value="demo" checked/><span class="sb-tg-l">🎬 Demo</span></label>
+      <label class="sb-tg" id="realModeTog"><input type="radio" name="vidMode" value="real"/><span class="sb-tg-l">⚡ Real <em>GPU</em></span></label>
+    </div>
+  </div>
+  <div class="sb-s">
+    <div class="sb-l">Slide Template</div>
+    <div class="sb-tg-g">
+      <label class="sb-tg" id="builtinTog"><input type="radio" name="templateMode" value="builtin" checked onchange="onTemplateModeChange()"/><span class="sb-tg-l">🎨 Built-in</span></label>
+      <label class="sb-tg"><input type="radio" name="templateMode" value="upload" onchange="onTemplateModeChange()"/><span class="sb-tg-l">📄 Upload .pptx</span></label>
+    </div>
+  </div>
+  <div class="sb-s" id="themeSection">
+    <div class="sb-l">Theme</div>
+    <div class="theme-g">
+      <div class="ts act" data-t="Modern Blue"    style="--tc:#3b82f6" onclick="selTheme(this)"><span>Blue</span></div>
+      <div class="ts" data-t="Academic Green"  style="--tc:#22c55e" onclick="selTheme(this)"><span>Green</span></div>
+      <div class="ts" data-t="Elegant Purple"  style="--tc:#a855f7" onclick="selTheme(this)"><span>Purple</span></div>
+      <div class="ts" data-t="Tech Gray"        style="--tc:#06b6d4" onclick="selTheme(this)"><span>Cyan</span></div>
+      <div class="ts" data-t="Warm Orange"      style="--tc:#f97316" onclick="selTheme(this)"><span>Orange</span></div>
+    </div>
+  </div>
+  <div class="sb-s" id="uploadTemplateSection" style="display:none">
+    <div class="sb-l">Upload Template</div>
+    <div class="uz uz-sm" id="templateDz" ondragover="event.preventDefault()" ondrop="handleDrop(event,'template')" onclick="templateInput.click()">
+      <div class="uz-i" style="font-size:1.4rem">📄</div>
+      <div class="uz-t">Drop .pptx here</div>
+      <input type="file" id="templateInput" accept=".pptx" style="display:none" onchange="onTemplateFile(this)"/>
+    </div>
+    <div id="templateInfo" class="ui" style="display:none"></div>
+  </div>
+</aside>
+
+<!-- MAIN PANELS -->
+<main class="panels">
+
+  <!-- Panel 1: Required Inputs -->
+  <div class="pnl active-panel" id="pnl-inputs">
+    <div class="ph">
+      <div class="pnum">①</div>
+      <div class="ptitle">Required Inputs</div>
+    </div>
+    <div class="pb-b">
+
+      <!-- Audio -->
+      <div class="input-block">
+        <div class="ib-label">Lecture Audio <span class="pb req">Required</span></div>
+        <div class="ib-desc">The classroom recording to convert into a MOOCs video</div>
+        <div class="uz" id="audioDz" ondragover="event.preventDefault()" ondrop="handleDrop(event,'audio')" onclick="audioInput.click()">
+          <div class="uz-i">🎵</div>
+          <div class="uz-t">Drop lecture audio here</div>
+          <div class="uz-s">WAV · MP3 · M4A · FLAC · max 500 MB</div>
+          <input type="file" id="audioInput" accept=".wav,.mp3,.m4a,.flac" style="display:none" onchange="onAudioFile(this)"/>
+        </div>
+        <div id="audioInfo" class="ui" style="display:none"></div>
+      </div>
+
+      <!-- Teacher video -->
+      <div class="input-block">
+        <div class="ib-label">Teacher Video <span class="pb req">Required</span></div>
+        <div class="ib-desc">Used automatically for: <strong>action model training</strong> + <strong>lip-sync face extraction</strong></div>
+        <div class="hint-chips">
+          <span class="hc hc-blue">💡 Teacher visible on camera</span>
+          <span class="hc hc-green">✨ Green-screen = best results</span>
+        </div>
+        <div class="uz" id="teacherDz" ondragover="event.preventDefault()" ondrop="handleDrop(event,'teacher')" onclick="teacherInput.click()">
+          <div class="uz-i">🎥</div>
+          <div class="uz-t">Drop teacher video here</div>
+          <div class="uz-s">MP4 · AVI · MOV — teacher must be visible on screen</div>
+          <input type="file" id="teacherInput" accept=".mp4,.avi,.mov,.mkv" style="display:none" onchange="onTeacherFile(this)"/>
+        </div>
+        <div id="teacherInfo" class="ui" style="display:none"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Panel 2: Optional Inputs -->
+  <div class="pnl" id="pnl-optional">
+    <div class="ph">
+      <div class="pnum">②</div>
+      <div class="ptitle">Optional Inputs</div>
+    </div>
+    <div class="pb-b">
+
+      <!-- Syllabus -->
+      <div class="input-block">
+        <div class="ib-label">Course Syllabus <span class="pb opt">Optional</span></div>
+        <div class="ib-desc">Enables knowledge point extraction and structured slide generation</div>
+        <div class="toolbar-row">
+          <button class="bg-b" onclick="loadTemplate()">📋 Example Format</button>
+          <label class="sw"><input type="checkbox" id="smartMode" checked/><span class="swt"></span> Smart matching</label>
+        </div>
+        <textarea id="syllabusTxt" rows="7" placeholder="Chapter Title&#10;Chapter 1: Data Structures&#10;&#10;Learning Objectives&#10;1. Understand arrays and linked lists&#10;&#10;Key Points&#10;Sorting algorithms&#10;Time complexity: O(n), O(log n)"></textarea>
+      </div>
+
+      <!-- Image materials -->
+      <div class="input-block">
+        <div class="ib-label">Image Materials <span class="pb opt">Optional</span></div>
+        <div class="ib-desc">CLIP matches each image to the most relevant slide automatically</div>
+        <div class="uz img-uz" id="imgDz" ondragover="event.preventDefault()" ondrop="handleDrop(event,'img')" onclick="imgInput.click()">
+          <div class="uz-i">🖼</div>
+          <div class="uz-t">Drop teaching images here</div>
+          <div class="uz-s">JPG · PNG · WEBP · multiple files allowed</div>
+          <input type="file" id="imgInput" accept=".jpg,.jpeg,.png,.webp" multiple style="display:none" onchange="onImgFiles(this)"/>
+        </div>
+        <div id="imgGrid" class="tg"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Panel 3: Generate -->
+  <div class="pnl pnl-generate" id="pnl-generate">
+    <div class="ph">
+      <div class="pnum">③</div>
+      <div class="ptitle">Generate <span class="pb fin">One Click</span></div>
+    </div>
+    <div class="pb-b">
+      <p class="pdesc">All processing runs automatically: Audio preprocessing → Text cleaning → Syllabus alignment → Slide generation → Script writing → Voice synthesis → Video composition</p>
+
+      <!-- Checklist -->
+      <div class="checklist" id="readyChecklist">
+        <div class="ci" id="ci-audio"><span class="ci-icon">○</span> Lecture audio</div>
+        <div class="ci" id="ci-teacher"><span class="ci-icon">○</span> Teacher video</div>
+        <div class="ci ci-opt" id="ci-syllabus"><span class="ci-icon">○</span> Syllabus <em>(optional)</em></div>
+        <div class="ci ci-opt" id="ci-images"><span class="ci-icon">○</span> Images <em>(optional)</em></div>
+        <div class="ci ci-opt" id="ci-template"><span class="ci-icon">○</span> Slide template <em>(optional)</em></div>
+      </div>
+
+      <button class="bp bp-grad" id="btnGenerate" onclick="runFullPipeline()" disabled>
+        <span>🎬 Generate MOOCs Video</span>
+        <div class="glow"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel 4: Progress -->
+  <div class="pnl" id="pnl-progress" style="display:none">
+    <div class="ph"><div class="pnum">⏳</div><div class="ptitle">Processing…</div></div>
+    <div class="pb-b">
+      <div class="flow-mini">
+        <div class="fm" id="fm-audio">🎙 Audio</div><div class="fa">›</div>
+        <div class="fm" id="fm-clean">✏ Clean</div><div class="fa">›</div>
+        <div class="fm" id="fm-align">📋 Align</div><div class="fa">›</div>
+        <div class="fm" id="fm-ppt">🖼 Slides</div><div class="fa">›</div>
+        <div class="fm" id="fm-script">📝 Script</div><div class="fa">›</div>
+        <div class="fm" id="fm-video">🎬 Video</div>
+      </div>
+      <div class="op"><div class="ot"><div id="pbFill"></div></div><span id="pbPct">0%</span></div>
+      <p id="pbMsg" style="font-size:.84rem;color:var(--sub)"></p>
+      <div id="pbLog" class="ol"></div>
+    </div>
+  </div>
+
+  <!-- Panel 5: Output -->
+  <div class="pnl pnl-vid" id="pnl-output" style="display:none">
+    <div class="ph"><div class="pnum">🎉</div><div class="ptitle">Your MOOCs Video is Ready! <span class="pb fin">Complete</span></div></div>
+    <div class="pb-b vid-r">
+      <div class="sb-banner">
+        <span>🎓</span>
+        <div><div class="sb-t">Teaching Video Generated Successfully</div><div class="sb-s">Slides · Script · Virtual Lecturer · Audio-Visual Sync</div></div>
+      </div>
+      <video id="outputVid" controls></video>
+      <div class="dc"><span>🎬 Complete MOOCs Video</span><a id="videoDl" href="#" class="cdl">⬇ Download MP4</a></div>
+      <div id="extraDownloads"></div>
+    </div>
+  </div>
+
+</main>
+</div><!-- /ws -->
+
+<!-- Overlay -->
+<div id="overlay" class="overlay" style="display:none">
+  <div class="ov-card">
+    <div class="rings"><div class="r1"></div><div class="r2"></div><div class="r3"></div></div>
+    <h2 id="ovTitle">Processing…</h2>
+    <div class="op"><div class="ot"><div id="pbFill2"></div></div><span id="pbPct2">0%</span></div>
+    <p id="pbMsg2">Please wait…</p>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script src="/static/js/app.js"></script>
+<script src="/static/js/pro.js"></script>
+</body>
+</html>

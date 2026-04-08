@@ -34,14 +34,16 @@ This system implements a **complete end-to-end automatic MOOCs lecture video gen
 </p>
 <p align="center"><b>Figure 1.</b> End-to-end pipeline of the proposed automatic MOOCs generation system.</p>
 
-The system accepts **two input streams** and processes them through **six sequential modules**, as shown above.
-
-### Two Input Streams
-
-| Stream | Role |
-|--------|------|
-| **Current Lecture Audio** (top row, orange) | The classroom recording to be converted — enters the 6-step main pipeline |
-| **Historical Lecture Videos** (bottom-left, purple) | Past recordings used for optional pre-training of the teacher action model |
+The system takes **four user inputs** and processes them through **six sequential modules**, as shown above.
+ 
+### User Inputs
+ 
+| # | Input | Required | Purpose |
+|---|-------|----------|---------|
+| ① | **Lecture Audio** (WAV / MP3 / M4A) | ✅ Required | The classroom recording to be converted into a MOOCs video |
+| ② | **Teacher Video** (MP4 / AVI / MOV) | ✅ Required | Dual-use: (a) train the teacher action model, (b) extract teacher face for wav2lip lip sync. Best results with teacher on camera or green-screen virtual avatar. |
+| ③ | **Course Syllabus** (text) | ✅ Required | Enables knowledge point extraction and structured slide generation |
+| ④ | **Teaching Materials** | Optional | Image files (auto-assigned to slides via CLIP) and/or a custom `.pptx` template (system injects generated content into your layout) |
 
 ### Six Processing Modules
 
@@ -202,28 +204,49 @@ including slide generation, virtual lecturer synthesis, and audio-visual alignme
 > - Subtitle alignment and final video composition
 
 ---
-
+ 
 ## 🖥 UI Versions
-
-Two interfaces ship in the same project, accessible at different URLs.
-
+ 
+Two interfaces are included in the same project. Both are also available as an **interactive demo on GitHub Pages** — no installation required.
+ 
+| Version | Live Demo | Local URL | Best for |
+|---------|-----------|-----------|---------|
+| **Simple UI** | [🔗 Try Simple Demo →](https://your-username.github.io/moocs-auto-generator/) | `http://localhost:8000` | First-time users, presentations |
+| **Pro UI** | [🔗 Try Pro Demo →](https://your-username.github.io/moocs-auto-generator/) | `http://localhost:8000/pro` | Power users, showcasing |
+ 
+> **Note:** The GitHub Pages demo simulates the full pipeline with animated progress steps. For real video generation, run locally with `python start.py`.
+ 
+---
+ 
 ### Simple UI (`/`) — Clean & Accessible
-
-Step-by-step card layout. Best for demos and first-time users.
-
-- **Font:** DM Sans + DM Mono · **Theme:** Light background
-- Drag-and-drop file upload, collapsible training section, toggle switches, progress overlay with log
-
+ 
+<p align="center"><img src="docs/screenshot_simple.png" width="80%" alt="Simple UI"/></p>
+ 
+Step-by-step card layout designed for clarity. Upload your files, configure settings, hit generate.
+ 
+- **Font:** DM Sans + DM Mono · **Theme:** Light background, accessible color contrast
+- Unified input area: audio + teacher video as primary inputs, syllabus + materials as optional
+- Drag-and-drop upload for all file types, instant thumbnail preview for images
+- Real-time progress bar with step indicators and log output
+- Built-in theme selector (5 styles) or upload your own `.pptx` template
+ 
+---
+ 
 ### Pro UI (`/pro`) — Dark & Animated
-
-Full interactive experience for power users and showcasing.
-
-- **Font:** Space Grotesk + Syne + JetBrains Mono · **Theme:** Dark glass morphism + neon accents
-- Animated particle network background (80 nodes), hero flow node entrance animation
-- Scroll-triggered panel reveals, per-step flash transitions, orbital ring progress spinner
-- Per-AI-model running indicator (shows Whisper / Sentence-BERT / CLIP / F5-TTS / wav2lip status)
-- Press `/` to focus Course Title field
-
+ 
+<p align="center"><img src="docs/screenshot_pro.png" width="80%" alt="Pro UI"/></p>
+ 
+Full interactive experience built for showcasing and demos.
+ 
+- **Font:** Space Grotesk + Syne + JetBrains Mono · **Theme:** Dark glass morphism + neon violet/cyan
+- Animated particle network background (80 nodes with connection lines)
+- Hero section with pipeline flow nodes — each node lights up as its step completes
+- Scroll-triggered panel reveal animations, per-step flash transition on completion
+- Orbital ring spinner overlay during processing
+- Per-AI-model running indicator: shows exactly which model (Whisper / ECAPA-TDNN / Sentence-BERT / CLIP / F5-TTS / wav2lip) is active at any moment
+- Sidebar configuration: LLM backend, video mode (demo/real), theme, template toggle
+- Press `/` to focus Course Title
+ 
 ---
 
 ## 🎯 Step-by-Step Usage

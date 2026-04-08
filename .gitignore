@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.env
+.venv/ venv/ env/
+uploads/
+output/*.mp4
+output/*.pptx
+output/*.txt
+output/*.wav
+output/training/
+output/sd_images/
+!output/README.md
+*.pth *.onnx *.pkl *.npz
+.DS_Store Thumbs.db
+.idea/ .vscode/ *.swp
+*.log logs/
+
+# Environment
+.env
+!.env.example

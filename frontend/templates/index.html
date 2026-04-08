@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MOOCs Auto-Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/simple.css"/>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="logo"><div class="lm">M</div><div><div class="lt">MOOCs Auto-Generator</div><div class="ls">Tamkang University · Ya-Xin Guo</div></div></div>
+    <a href="/pro" class="pro-btn">✨ Pro →</a>
+    <div id="statusBadge" class="sbadge">Checking…</div>
+  </div>
+</header>
+
+<main>
+
+<!-- ════ SECTION 1: REQUIRED INPUTS ════ -->
+<section class="card">
+  <div class="ch"><span>📥</span> Required Inputs</div>
+  <div class="cb">
+
+    <!-- Audio -->
+    <div class="input-group">
+      <div class="ig-label">① Lecture Audio <span class="tag-req">Required</span></div>
+      <div class="ig-hint">The classroom recording you want to turn into a MOOCs video</div>
+      <div class="dz" id="audioDz" ondragover="event.preventDefault()" ondrop="handleDrop(event,'audio')" onclick="audioInput.click()">
+        🎵 Drop audio file here<br/><small>WAV · MP3 · M4A · FLAC (max 500 MB)</small>
+        <input type="file" id="audioInput" accept=".wav,.mp3,.m4a,.flac" style="display:none" onchange="onAudioFile(this)"/>
+      </div>
+      <div id="audioInfo" class="fi" style="display:none"></div>
+    </div>
+
+    <!-- Teacher video -->
+    <div class="input-group">
+      <div class="ig-label">② Teacher Video <span class="tag-req">Required</span></div>
+      <div class="ig-hint">Used for: action model training + lip sync face extraction<br/>Best: teacher on camera or green-screen virtual avatar</div>
+      <div class="dz" id="teacherDz" ondragover="event.preventDefault()" ondrop="handleDrop(event,'teacher')" onclick="teacherInput.click()">
+        🎥 Drop teacher video here<br/><small>MP4 · AVI · MOV — teacher must be visible on screen</small>
+        <input type="file" id="teacherInput" accept=".mp4,.avi,.mov,.mkv" style="display:none" onchange="onTeacherFile(this)"/>
+      </div>
+      <div id="teacherInfo" class="fi" style="display:none"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════ SECTION 2: OPTIONAL INPUTS ════ -->
+<section class="card">
+  <div class="ch"><span>📎</span> Optional Inputs</div>
+  <div class="cb">
+
+    <!-- Syllabus -->
+    <div class="input-group">
+      <div class="ig-label">③ Course Syllabus <span class="tag-opt">Optional</span></div>
+      <div class="ig-hint">Used for knowledge point extraction and slide structuring</div>
+      <div style="text-align:right;margin-bottom:4px"><button class="btn btn-sm btn-outline" onclick="loadTemplate()">Load Example</button></div>
+      <textarea id="syllabusTxt" rows="8" placeholder="Chapter Title&#10;Chapter 1: Data Structures&#10;&#10;Learning Objectives&#10;1. Understand arrays and linked lists&#10;&#10;Key Points&#10;Sorting algorithms&#10;Time complexity: O(n), O(log n)"></textarea>
+    </div>
+
+    <!-- Image materials -->
+    <div class="input-group">
+      <div class="ig-label">④ Image Materials <span class="tag-opt">Optional</span></div>
+      <div class="ig-hint">Photos, diagrams, charts — inserted into slides via CLIP semantic matching</div>
+      <div class="dz" id="imgDz" ondragover="event.preventDefault()" ondrop="handleDrop(event,'img')" onclick="imgInput.click()">
+        🖼 Drop teaching images here (multiple)<br/><small>JPG · PNG · WEBP</small>
+        <input type="file" id="imgInput" accept=".jpg,.jpeg,.png,.webp" multiple style="display:none" onchange="onImgFiles(this)"/>
+      </div>
+      <div id="imgGrid"></div>
+    </div>
+
+    <!-- Slide template -->
+    <div class="input-group">
+      <div class="ig-label">⑤ Slide Template <span class="tag-opt">Optional</span></div>
+      <div class="ig-hint">Upload your own .pptx template, or pick one of our built-in themes</div>
+      <div class="template-row">
+        <label class="radio-opt"><input type="radio" name="templateMode" value="builtin" checked onchange="onTemplateModeChange()"/> Built-in Theme</label>
+        <label class="radio-opt"><input type="radio" name="templateMode" value="upload" onchange="onTemplateModeChange()"/> Upload .pptx</label>
+      </div>
+      <!-- Built-in theme picker -->
+      <div id="themeSection">
+        <div class="theme-pills">
+          <label class="tp active" data-t="Modern Blue"    onclick="selTheme(this)">Modern Blue</label>
+          <label class="tp" data-t="Academic Green"  onclick="selTheme(this)">Academic Green</label>
+          <label class="tp" data-t="Elegant Purple"  onclick="selTheme(this)">Elegant Purple</label>
+          <label class="tp" data-t="Tech Gray"        onclick="selTheme(this)">Tech Gray</label>
+          <label class="tp" data-t="Warm Orange"      onclick="selTheme(this)">Warm Orange</label>
+        </div>
+      </div>
+      <!-- Upload template -->
+      <div id="uploadTemplateSection" style="display:none">
+        <div class="dz dz-sm" id="templateDz" ondragover="event.preventDefault()" ondrop="handleDrop(event,'template')" onclick="templateInput.click()">
+          📄 Drop your .pptx template here<br/><small>System will inject generated content into your layout</small>
+          <input type="file" id="templateInput" accept=".pptx" style="display:none" onchange="onTemplateFile(this)"/>
+        </div>
+        <div id="templateInfo" class="fi" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════ SECTION 3: SETTINGS ════ -->
+<section class="card">
+  <div class="ch"><span>⚙</span> Settings</div>
+  <div class="cb g2">
+    <div class="fld">
+      <label>Course Title</label>
+      <input id="courseTitle" type="text" value="Lecture" placeholder="Course name…"/>
+    </div>
+    <div class="fld">
+      <label>LLM Backend</label>
+      <div class="rg">
+        <label class="ro"><input type="radio" name="llm" value="ollama" checked/> 🦙 Ollama (Local)</label>
+        <label class="ro"><input type="radio" name="llm" value="openai"/> 🤖 OpenAI</label>
+      </div>
+    </div>
+    <div class="fld" id="oaiField" style="display:none">
+      <label>OpenAI API Key</label>
+      <input id="openaiKey" type="password" placeholder="sk-…"/>
+    </div>
+    <div class="fld">
+      <label>Alignment Threshold <span id="thrVal">0.6</span></label>
+      <input type="range" id="threshold" min="0.3" max="0.9" step="0.05" value="0.6" oninput="thrVal.textContent=this.value"/>
+    </div>
+    <div class="fld">
+      <label>Video Mode</label>
+      <div class="rg">
+        <label class="ro"><input type="radio" name="vidMode" value="demo" checked/> 🎬 Demo</label>
+        <label class="ro"><input type="radio" name="vidMode" value="real"/> ⚡ Real (GPU)</label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ GENERATE BUTTON ════ -->
+<div class="generate-area">
+  <button class="btn-generate" id="btnGenerate" onclick="runFullPipeline()" disabled>
+    🎬 Generate MOOCs Video
+  </button>
+  <div class="gen-hint">Upload lecture audio + teacher video to enable</div>
+</div>
+
+<!-- ════ PROGRESS ════ -->
+<section class="card" id="progressCard" style="display:none">
+  <div class="ch"><span>⏳</span> Processing…</div>
+  <div class="cb">
+    <div class="pipe-steps">
+      <div class="ps2" id="s-audio">🎙 Audio</div>
+      <div class="ps2-arr">›</div>
+      <div class="ps2" id="s-clean">✏ Clean</div>
+      <div class="ps2-arr">›</div>
+      <div class="ps2" id="s-align">📋 Align</div>
+      <div class="ps2-arr">›</div>
+      <div class="ps2" id="s-ppt">🖼 Slides</div>
+      <div class="ps2-arr">›</div>
+      <div class="ps2" id="s-script">📝 Script</div>
+      <div class="ps2-arr">›</div>
+      <div class="ps2" id="s-video">🎬 Video</div>
+    </div>
+    <div class="pb-wrap"><div class="pb-bg"><div id="pbFill" style="width:0%"></div></div><span id="pbPct">0%</span></div>
+    <p id="pbMsg" style="font-size:.85rem;color:#64748b;margin-top:.3rem"></p>
+    <div id="pbLog" class="log-box"></div>
+  </div>
+</section>
+
+<!-- ════ OUTPUT ════ -->
+<section class="card" id="outputCard" style="display:none">
+  <div class="ch"><span>🎉</span> Your MOOCs Video is Ready!</div>
+  <div class="cb">
+    <video id="outputVid" controls style="width:100%;border-radius:8px;background:#000"></video>
+    <div class="dl-row">
+      <span>🎬 Complete Teaching Video</span>
+      <a id="videoDl" href="#" class="btn btn-dl">⬇ Download MP4</a>
+    </div>
+    <div id="extraDownloads"></div>
+  </div>
+</section>
+
+</main>
+
+<div id="toasts"></div>
+<footer>MOOCs Auto-Generation System · Tamkang University CSIE · Ya-Xin Guo · Dr. Chih-Yung Chang · Dr. Shih-Jung Wu</footer>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

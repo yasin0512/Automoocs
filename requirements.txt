@@ -1,0 +1,136 @@
+# ════════════════════════════════════════════════════════════════
+# MOOCs Auto-Generation System — Python Dependencies
+# Python 3.10+  |  CPU deployment fully supported
+#
+# QUICK INSTALL (CPU-only, no GPU required):
+#   pip install -r requirements.txt
+#
+# GPU INSTALL (CUDA 12.1 — faster Whisper + BERT):
+#   pip install -r requirements.txt
+#   pip install torch torchvision torchaudio \
+#       --index-url https://download.pytorch.org/whl/cu121
+#
+# MINIMUM RUNNABLE SET (for demo mode, CPU):
+#   pip install fastapi uvicorn[standard] python-multipart websockets \
+#               openai-whisper librosa soundfile noisereduce scipy \
+#               moviepy opencv-python Pillow torch transformers \
+#               sentence-transformers python-pptx opencc-python-reimplemented \
+#               requests numpy tqdm
+# ════════════════════════════════════════════════════════════════
+
+# ── Web Framework ─────────────────────────────────────────────
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
+aiofiles>=23.2.1
+websockets>=12.0
+
+# ── Audio Processing (Ch. 4-2-1 + 4-3-1) ─────────────────────
+# Whisper: CPU auto-selects 'base' model (~140 MB, no GPU needed)
+#          GPU uses 'large-v3' (~1.5 GB, requires CUDA)
+openai-whisper>=20231117
+
+librosa>=0.10.1          # Audio analysis, resampling, Mel-spectrogram
+soundfile>=0.12.1        # WAV read/write
+noisereduce>=3.0.2       # Non-stationary noise suppression (CPU)
+scipy>=1.13.0            # Signal processing
+moviepy>=1.0.3           # Video → audio extraction (CPU)
+pydub>=0.25.1            # Audio format conversion
+
+# Silero-VAD — loaded via torch.hub, auto-downloads ~few MB
+# CPU-compatible natively. Pre-load:
+#   python -c "import torch; torch.hub.load('snakers4/silero-vad','silero_vad')"
+
+# ── Image Processing (Ch. 4-2-2) ─────────────────────────────
+opencv-python>=4.9.0     # CLAHE, frame extraction, letterbox 224×224 (CPU)
+Pillow>=10.3.0           # Image I/O for PPTX / CLIP / BLIP-2
+
+# ── Deep Learning Core (CPU by default) ──────────────────────
+# CPU PyTorch: ~200 MB, runs all modules without GPU
+torch>=2.2.0
+torchvision>=0.17.0
+torchaudio>=2.2.0
+# Switch to GPU (CUDA 12.1) — faster but optional:
+#   pip install torch torchvision torchaudio \
+#       --index-url https://download.pytorch.org/whl/cu121
+
+transformers>=4.40.0     # BERT-base-chinese, BLIP-2 (CPU-compatible)
+scikit-learn>=1.4.0      # cosine_similarity
+
+# ── Speaker Diarization (Ch. 4-3-2) ECAPA-TDNN ───────────────
+# speechbrain: ECAPA-TDNN for speaker embedding + AHC clustering
+# CPU-compatible (slower). Falls back to single-speaker if not installed.
+speechbrain>=1.0.0
+
+# ── Skeleton / Pose Extraction (Ch. 4-5-1) ───────────────────
+# MediaPipe: CPU-optimized (uses OpenCV backend, no GPU needed)
+mediapipe>=0.10.9
+
+# ── NLP / Semantic Alignment (Ch. 4-4) ───────────────────────
+# Sentence-BERT: CPU-compatible, ~90 MB model download on first run
+sentence-transformers>=2.7.0   # paraphrase-multilingual-MiniLM-L12-v2
+
+# KeyBERT: keyword extraction (CPU-compatible)
+keybert>=0.8.4
+
+# CKIP-Transformers: Taiwan Chinese NLP — word seg + POS tagging
+# CPU-compatible. First run downloads ~400 MB BERT model.
+ckip-transformers>=0.3.4
+
+# OpenCC: Simplified → Traditional Chinese conversion (CPU, pure Python)
+opencc-python-reimplemented>=0.1.7
+
+# ── LLM Backends (Ch. 4-3-1 text cleaning + Ch. 4-6 script gen) ──
+openai>=1.30.0           # GPT-4o cloud fallback
+requests>=2.32.0         # Ollama local API (LLaMA3)
+
+# ── Presentation Generation (Ch. 4-6) ────────────────────────
+python-pptx>=1.0.0       # PPTX assembly (CPU, pure Python)
+
+# ── Utilities ─────────────────────────────────────────────────
+python-dotenv>=1.0.1
+numpy>=1.26.0
+pandas>=2.2.0
+tqdm>=4.66.0
+
+# ════════════════════════════════════════════════════════════════
+# OPTIONAL — Advanced Features (CPU-compatible unless noted)
+# ════════════════════════════════════════════════════════════════
+
+# CLIP (Ch. 4-6-2 image–text alignment):
+#   CPU-compatible (~338 MB ViT-B/32 model, inference in ~1s/image on CPU)
+#   pip install git+https://github.com/openai/CLIP.git
+
+# BLIP-2 (Ch. 4-6-2 image captioning):
+#   GPU strongly recommended (2.7B param model). CPU works but very slow (~minutes/image).
+#   pip install accelerate
+#   Model auto-downloads: Salesforce/blip2-opt-2.7b (~15 GB)
+#   → On CPU, CLIP alignment is recommended instead.
+
+# Stable Diffusion WebUI (Ch. 4-6-2 image generation, Strategy B):
+#   Requires local AUTOMATIC1111 SD WebUI with --api flag.
+#   GPU strongly recommended. CPU mode takes ~5-10 min/image.
+#   https://github.com/AUTOMATIC1111/stable-diffusion-webui
+
+# ════════════════════════════════════════════════════════════════
+# STEP 6 REAL MODE — Requires additional installation
+# (Demo mode works without any of these)
+# ════════════════════════════════════════════════════════════════
+
+# F5-TTS (Ch. 4-7-1 voice synthesis):
+#   GPU required for real-time synthesis. CPU works but very slow.
+#   pip install f5-tts
+#   Usage: from f5_tts.infer.utils_infer import infer_process
+
+# wav2lip (Ch. 4-7-2 lip synchronization):
+#   git clone https://github.com/Rudrabha/Wav2Lip
+#   pip install -r Wav2Lip/requirements.txt
+#   Download: wav2lip_gan.pth → Wav2Lip/checkpoints/
+#   GPU recommended, CPU functional for short clips.
+
+# FFmpeg (Ch. 4-7-3/4 video composition):
+#   Required for real mode video output. CPU-only is fine.
+#   Ubuntu:  sudo apt install ffmpeg
+#   macOS:   brew install ffmpeg
+#   Windows: https://ffmpeg.org/download.html
+#   Verify:  ffmpeg -version
