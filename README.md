@@ -204,49 +204,28 @@ including slide generation, virtual lecturer synthesis, and audio-visual alignme
 > - Subtitle alignment and final video composition
 
 ---
- 
+
 ## 🖥 UI Versions
- 
-Two interfaces are included in the same project. Both are also available as an **interactive demo on GitHub Pages** — no installation required.
- 
-| Version | Live Demo | Local URL | Best for |
-|---------|-----------|-----------|---------|
-| **Simple UI** | [🔗 Try Simple Demo →](https://your-username.github.io/moocs-auto-generator/) | `http://localhost:8000` | First-time users, presentations |
-| **Pro UI** | [🔗 Try Pro Demo →](https://your-username.github.io/moocs-auto-generator/) | `http://localhost:8000/pro` | Power users, showcasing |
- 
-> **Note:** The GitHub Pages demo simulates the full pipeline with animated progress steps. For real video generation, run locally with `python start.py`.
- 
----
- 
+
+Two interfaces ship in the same project, accessible at different URLs.
+
 ### Simple UI (`/`) — Clean & Accessible
- 
-<p align="center"><img src="docs/screenshot_simple.png" width="80%" alt="Simple UI"/></p>
- 
-Step-by-step card layout designed for clarity. Upload your files, configure settings, hit generate.
- 
-- **Font:** DM Sans + DM Mono · **Theme:** Light background, accessible color contrast
-- Unified input area: audio + teacher video as primary inputs, syllabus + materials as optional
-- Drag-and-drop upload for all file types, instant thumbnail preview for images
-- Real-time progress bar with step indicators and log output
-- Built-in theme selector (5 styles) or upload your own `.pptx` template
- 
----
- 
+
+Step-by-step card layout. Best for demos and first-time users.
+
+- **Font:** DM Sans + DM Mono · **Theme:** Light background
+- Drag-and-drop file upload, collapsible training section, toggle switches, progress overlay with log
+
 ### Pro UI (`/pro`) — Dark & Animated
- 
-<p align="center"><img src="docs/screenshot_pro.png" width="80%" alt="Pro UI"/></p>
- 
-Full interactive experience built for showcasing and demos.
- 
-- **Font:** Space Grotesk + Syne + JetBrains Mono · **Theme:** Dark glass morphism + neon violet/cyan
-- Animated particle network background (80 nodes with connection lines)
-- Hero section with pipeline flow nodes — each node lights up as its step completes
-- Scroll-triggered panel reveal animations, per-step flash transition on completion
-- Orbital ring spinner overlay during processing
-- Per-AI-model running indicator: shows exactly which model (Whisper / ECAPA-TDNN / Sentence-BERT / CLIP / F5-TTS / wav2lip) is active at any moment
-- Sidebar configuration: LLM backend, video mode (demo/real), theme, template toggle
-- Press `/` to focus Course Title
- 
+
+Full interactive experience for power users and showcasing.
+
+- **Font:** Space Grotesk + Syne + JetBrains Mono · **Theme:** Dark glass morphism + neon accents
+- Animated particle network background (80 nodes), hero flow node entrance animation
+- Scroll-triggered panel reveals, per-step flash transitions, orbital ring progress spinner
+- Per-AI-model running indicator (shows Whisper / Sentence-BERT / CLIP / F5-TTS / wav2lip status)
+- Press `/` to focus Course Title field
+
 ---
 
 ## 🎯 Step-by-Step Usage
